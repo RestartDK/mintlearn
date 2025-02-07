@@ -1,3 +1,20 @@
+Time taken: 6 hours
+
+## TODO
+
+- [x] Use a zod schema to enforce the chat completion from mistral to use for the UI
+- [x] Implement chat endpoint for making `Quiz` object
+- [x] Implement retry endpoint for making a new `Quiz` object based on the last one
+- [ ] Make the quiz components where user can click and go to next page and get score at the end
+- [ ] Make the first page where you fill in form and button to redirect to quiz
+- [ ] Make end screen where you can restart or redo a new quiz
+
+## If more time
+
+- [ ] Can use a sqlite instance to quickly get a db working
+- [ ] Make the chat interface with streaming where you can have the chat on the left with the quiz on the right and can continuously regenerate the quiz on the fly
+- [ ] Make a sexy readme, push to git, and apply for mistral!
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
