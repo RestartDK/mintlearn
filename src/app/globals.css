@@ -5,12 +5,26 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #96c0b7;
+
+  /* Mint palette */
+  --mint-50: #d2fef4;
+  --mint-100: #cdf8ee;
+  --mint-200: #c7f3e9;
+  --mint-300: #b9e4da;
+  --mint-400: #96c0b7;
+  --mint-500: #79a299;
+  --mint-600: #517870;
+  --mint-700: #3d645c;
+  --mint-800: #1e453e;
+  --mint-900: #00241e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --primary: #96c0b7;
   }
 }
 
