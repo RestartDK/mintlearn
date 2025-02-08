@@ -7,10 +7,17 @@ export interface QuizAttempt {
   timestamp: Date;
 }
 
-/**
- * For actually checking my answers I could just add them to an answers object
- * Then at the end of the quiz I can check with the quiz object I have in memory
- *
- * if the memory approach fails or is too hard I will make a sqlite db just to store the
- * entire quiz and check from a backend call like /check to get the correct answers
- * **/
+export interface QuizResults {
+  quizId: number;
+  score: number;
+  total: number;
+  answers: {
+    questionId: number;
+    question: string;
+    correctPosition: number;
+    selectedPosition: number;
+    selectedAnswer: string;
+    correctAnswer: string;
+    isCorrect: boolean;
+  }[];
+}

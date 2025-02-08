@@ -41,6 +41,7 @@ const questionSchema = z
 
 // Full Quiz Schema
 export const quizSchema = z.object({
+  id: z.number().optional(),
   questions: z
     .array(questionSchema)
     .min(1, "Quiz must have at least one question"),
