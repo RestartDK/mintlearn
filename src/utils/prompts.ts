@@ -1,4 +1,5 @@
 import { Answer } from "./schemas";
+import { QuizResults } from "./types";
 
 export const generateQuizPrompt = (title: string, content: string) => `
 As an educational quiz creator, generate a comprehensive quiz based on the following material:
@@ -52,27 +53,28 @@ Return only the JSON object with no additional text or explanation.
 export const generateAdaptiveQuizPrompt = (
   title: string,
   content: string,
-  previousAnswers: Answer[],
+  previousResults: QuizResults,
 ) => `
 As an educational quiz creator, generate a new quiz based on the following material and the user's previous performance:
 
 Title: ${title}
 Content: ${content}
 
-User's Previous Performance:
-${previousAnswers
+User's Previous Performance (Score: ${previousResults.score}/${previousResults.total}):
+${previousResults.answers
   .map(
     (answer) =>
       `Question: ${answer.question}
-   Answered Correctly: ${answer.isCorrect}`,
+Answered: ${answer.selectedAnswer}
+Correct: ${answer.isCorrect ? "Yes" : "No"}`,
   )
-  .join("\n")}
+  .join("\n\n")}
 
 Create a new quiz that:
-1. Focuses more on topics where the user made mistakes
+1. Focuses more on topics where the user made mistakes (${previousResults.answers.filter((a) => !a.isCorrect).length} incorrect answers)
 2. Includes some new questions on related concepts
 3. Rephrases some previously incorrect questions differently
-4. Maintains some questions on topics they understood well
+4. Maintains some questions on topics they understood well (${previousResults.answers.filter((a) => a.isCorrect).length} correct answers)
 
 Format the questions in this JSON structure:
 {
@@ -98,7 +100,7 @@ Format the questions in this JSON structure:
           "content": "Fourth option"
         }
       ],
-      "correct": 2
+      "correct": integer between 1-4 representing the correct option position
     }
   ]
 }
@@ -106,9 +108,9 @@ Format the questions in this JSON structure:
 Requirements:
 1. Each question must have exactly 4 options
 2. IDs must be sequential numbers
-3. The "correct" field must be the ID of the correct option
+3. The "correct" field must be a number 1-4 representing the position of the correct option
 4. Include a mix of easy and challenging questions
 5. Ensure questions are clear and unambiguous
+6. Create ${previousResults.total} questions
 
-Return only the JSON object with no additional text or explanation.
-`;
+Return only the JSON object with no additional text or explanation.`;
