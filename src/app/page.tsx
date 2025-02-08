@@ -1,7 +1,19 @@
+import { QuizForm } from "@/components/quiz-form";
+import Image from "next/image";
+
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      Hello there
+    <div className="mx-auto max-w-lg grid px-4 py-12 items-center">
+      <h1 className="text-5xl flex gap-x-4 mb-8 font-extrabold">
+        <Image
+          src="/educhat-logo.svg"
+          width={50}
+          height={50}
+          alt="Educhat logo"
+        />
+        Educhat
+      </h1>
+      <QuizForm />
     </div>
   );
 }
