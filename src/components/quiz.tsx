@@ -1,8 +1,9 @@
 "use client";
 
 import { Answer, Quiz } from "@/utils/schemas";
-import { useRouter } from "next/router";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { submitAnswers } from "@/lib/hooks";
 
 export function QuizView({ quiz }: { quiz: Quiz }) {
   const [answers, setAnswers] = useState<Answer[]>([]);
@@ -30,11 +31,10 @@ export function QuizView({ quiz }: { quiz: Quiz }) {
 
   async function handleSubmit() {
     try {
-      const submitResponse = await fetch(`/api/answers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers }),
-      });
+      // TODO: Remove variable here and instead just await
+      const response = await submitAnswers(answers);
+
+      console.log(response);
 
       // Redirect to results page with quiz ID
       router.push(`/quiz/${quiz.id}/results`);
@@ -48,8 +48,8 @@ export function QuizView({ quiz }: { quiz: Quiz }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Quiz</h1>
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      <h2 className="text-3xl font-bold mb-8">Quiz</h2>
       <div className="space-y-8">
         {quiz.questions.map((question, index) => (
           <div key={question.id} className="border-b pb-6">
@@ -61,11 +61,11 @@ export function QuizView({ quiz }: { quiz: Quiz }) {
                 <label
                   key={option.id}
                   className={`
-                    block p-3 rounded cursor-pointer
+                    block p-3 rounded cursor-pointer border text-white bg-background
                     ${
                       getSelectedOption(question.id) === option.id
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 hover:bg-gray-200"
+                        ? "border-mint-400"
+                        : "border-gray-800 hover:bg-gray-800"
                     }
                   `}
                 >
@@ -90,14 +90,7 @@ export function QuizView({ quiz }: { quiz: Quiz }) {
       <button
         onClick={handleSubmit}
         disabled={answers.length !== quiz.questions.length}
-        className={`
-          mt-8 px-6 py-3 rounded text-white w-full
-          ${
-            answers.length === quiz.questions.length
-              ? "bg-blue-500 hover:bg-blue-600"
-              : "bg-gray-300 cursor-not-allowed"
-          }
-        `}
+        className="mt-8 px-6 py-3 rounded text-foreground w-full font-bold bg-mint-400 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Submit Quiz
       </button>
