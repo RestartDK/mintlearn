@@ -30,6 +30,7 @@ export async function initDb() {
     CREATE TABLE IF NOT EXISTS options (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       question_id INTEGER,
+      position INTEGER NOT NULL,
       content TEXT NOT NULL,
       FOREIGN KEY (question_id) REFERENCES questions(id)
     );
