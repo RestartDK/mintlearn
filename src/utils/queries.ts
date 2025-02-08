@@ -28,16 +28,19 @@ export async function generateQuizFromMistral(
     );
     const validatedQuiz = quizSchema.safeParse(parsedContent);
 
-    if (validatedQuiz.success) {
-      return validatedQuiz.data;
+    console.log(validatedQuiz);
+
+    if (validatedQuiz.error) {
+      throw new Error(validatedQuiz.error.toString());
     }
 
     if (retryCount < MAX_RETRIES) {
       return generateQuizFromMistral(title, content, prompt, retryCount + 1);
     }
 
-    return null;
+    return validatedQuiz.data;
   } catch (error) {
+    console.log(error);
     if (retryCount < MAX_RETRIES) {
       return generateQuizFromMistral(title, content, prompt, retryCount + 1);
     }
