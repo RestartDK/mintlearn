@@ -1,32 +1,79 @@
 import { generateQuizFromMistral } from "@/utils/queries";
-import { chatSchema } from "@/utils/schemas";
 import { generateAdaptiveQuizPrompt } from "@/utils/prompts";
+import { redirect } from "next/navigation";
+import { QuizResults } from "@/utils/types";
+import { openDb } from "@/lib/db";
+import { getQuiz, insertQuiz } from "@/lib/queries";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const data = chatSchema.safeParse(body);
+    const results = (await req.json()) as QuizResults;
+    console.log(results);
 
-    if (!data.success) {
-      console.log(data.error);
-      return Response.json({ message: "Invalid input" }, { status: 400 });
+    const { quizId } = results;
+
+    // if (!data.success) {
+    //   console.log(data.error);
+    //   return Response.json({ message: "Invalid input" }, { status: 400 });
+    // }
+
+    const db = await openDb();
+
+    // TODO: Make a new type here for the db version of the quiz made one inffered from zod schem smh
+    const currentQuiz = await db.get(
+      "SELECT title, content from quizzes where id = ?",
+      [quizId],
+    );
+
+    console.log(currentQuiz);
+
+    if (!currentQuiz) {
+      return Response.json(
+        { error: "Original quiz not found" },
+        { status: 404 },
+      );
     }
 
-    const { title, content } = data.data;
+    if (results) {
+      const prompt = generateAdaptiveQuizPrompt(
+        currentQuiz.title,
+        currentQuiz.content,
+        results,
+      );
 
-    const answers = data.data.answers;
-    if (answers) {
-      const prompt = generateAdaptiveQuizPrompt(title, content, answers);
-      console.log(prompt);
-      const quiz = await generateQuizFromMistral(title, content, prompt);
+      const generatedQuiz = await generateQuizFromMistral(
+        currentQuiz.title,
+        currentQuiz.content,
+        prompt,
+      );
 
-      if (!quiz) {
+      console.log("We will generate a quiz");
+      console.log(generatedQuiz);
+
+      if (!generatedQuiz) {
         return Response.json(
           { message: "Failed to generate quiz" },
           { status: 400 },
         );
       }
 
+      const quizId = await insertQuiz(
+        currentQuiz.title,
+        currentQuiz.content,
+        generatedQuiz.questions,
+      );
+
+      if (!quizId) {
+        return Response.json("Failed to save quiz", { status: 500 });
+      }
+
+      const quiz = await getQuiz(quizId);
+
+      if (!quiz) {
+        return Response.json("Failed to find quiz", { status: 400 });
+      }
+
+      // redirect(`/quiz/${quiz.id}`);
       return Response.json(quiz, { status: 200 });
     }
   } catch (e) {
