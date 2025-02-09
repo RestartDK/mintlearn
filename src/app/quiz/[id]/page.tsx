@@ -9,6 +9,8 @@ export default async function QuizPage({
   const id = (await params).id;
   const quiz = await getQuiz(parseInt(id));
 
+  console.log(quiz);
+
   if (!quiz) {
     return <div>Loading...</div>;
   }

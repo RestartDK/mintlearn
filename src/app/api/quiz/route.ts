@@ -1,4 +1,4 @@
-import { generateQuizFromMistral } from "@/utils/queries";
+import { generateQuizFromMistral } from "@/utils/generate";
 import { chatSchema } from "@/utils/schemas";
 import { generateQuizPrompt } from "@/utils/prompts";
 import { getQuiz, insertQuiz } from "@/lib/queries";
@@ -14,9 +14,7 @@ export async function POST(req: Request) {
 
     const { title, content } = data.data;
     const prompt = generateQuizPrompt(title, content);
-    console.log(prompt);
     const generatedQuiz = await generateQuizFromMistral(title, content, prompt);
-    console.log(generatedQuiz);
 
     if (!generatedQuiz) {
       return Response.json(
@@ -26,6 +24,7 @@ export async function POST(req: Request) {
     }
 
     const quizId = await insertQuiz(title, content, generatedQuiz.questions);
+    console.log(quizId);
 
     if (!quizId) {
       return Response.json("Failed to save quiz", { status: 500 });

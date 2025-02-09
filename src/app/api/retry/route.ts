@@ -1,8 +1,8 @@
-import { generateQuizFromMistral } from "@/utils/queries";
+import { generateQuizFromMistral } from "@/utils/generate";
 import { generateAdaptiveQuizPrompt } from "@/utils/prompts";
 import { QuizContent, QuizResults } from "@/utils/types";
-import { openDb } from "@/lib/db";
 import { getQuiz, insertQuiz } from "@/lib/queries";
+import { turso } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
@@ -11,21 +11,24 @@ export async function POST(req: Request) {
 
     const { quizId } = results;
 
-    const db = await openDb();
+    console.log("we are looking at this quiz", quizId);
 
-    const currentQuiz: QuizContent | undefined = await db.get(
-      "SELECT title, content from quizzes where id = ?",
-      [quizId],
-    );
+    const { rows } = await turso.execute({
+      sql: "SELECT title, content from quizzes where id = ?",
+      args: [quizId],
+    });
 
-    console.log(currentQuiz);
+    console.log(rows);
 
-    if (!currentQuiz) {
+    if (!rows) {
       return Response.json(
         { error: "Original quiz not found" },
         { status: 404 },
       );
     }
+
+    // Type casting quiz
+    const currentQuiz = rows[0] as unknown as QuizContent;
 
     if (results) {
       const prompt = generateAdaptiveQuizPrompt(

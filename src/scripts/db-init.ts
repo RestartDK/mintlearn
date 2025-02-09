@@ -1,5 +1,6 @@
-// scripts/init-db.ts
-import { initDb } from "../lib/db";
+"use server";
+
+import { initDb } from "@/lib/queries";
 
 async function init() {
   try {

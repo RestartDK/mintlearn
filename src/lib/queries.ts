@@ -1,16 +1,59 @@
 "server-only";
+import { Answer, Question, Quiz } from "@/utils/schemas";
+import { turso } from "./db";
+import { QuizAnswer, QuizResults } from "@/utils/types";
 
-import { Question, Quiz } from "@/utils/schemas";
-import { openDb } from "./db";
-import { QuizResults } from "@/utils/types";
+export async function initDb() {
+  try {
+    // Create tables one at a time
+    await turso.execute(`
+      CREATE TABLE IF NOT EXISTS quizzes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
+    await turso.execute(`
+      CREATE TABLE IF NOT EXISTS questions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        quiz_id INTEGER,
+        title TEXT NOT NULL,
+        correct INTEGER NOT NULL,
+        FOREIGN KEY (quiz_id) REFERENCES quizzes(id)
+      )
+    `);
+
+    await turso.execute(`
+      CREATE TABLE IF NOT EXISTS options (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        question_id INTEGER,
+        position INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        FOREIGN KEY (question_id) REFERENCES questions(id)
+      )
+    `);
+
+    await turso.execute(`
+      CREATE TABLE IF NOT EXISTS answers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        question_id INTEGER,
+        selected_option_id INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (question_id) REFERENCES questions(id),
+        FOREIGN KEY (selected_option_id) REFERENCES options(id)
+      )
+    `);
+  } catch (error) {
+    throw error;
+  }
+}
 export async function getQuizResults(
   quizId: number,
 ): Promise<QuizResults | null> {
-  const db = await openDb();
-  try {
-    const results = await db.all(
-      `
+  const { rows } = await turso.execute({
+    sql: `
       SELECT
         a.question_id as questionId,
         q.title as question,
@@ -30,40 +73,33 @@ export async function getQuizResults(
       WHERE q.quiz_id = ?
       ORDER BY a.question_id
     `,
-      [quizId],
-    );
+    args: [quizId],
+  });
 
-    if (results.length === 0) {
-      return null;
-    }
+  if (!rows.length) return null;
 
-    const score = results.filter((r) => r.isCorrect).length;
-    const total = results.length;
+  const score = rows.filter((r) => r.isCorrect).length;
+  const booleanAnswers = rows.map((row) => ({
+    ...row,
+    isCorrect: row.isCorrect === 1,
+  }));
 
-    // Convert isCorrect to boolean in the mapped results
-    const answers = results.map((result) => ({
-      ...result,
-      isCorrect: result.isCorrect === 1,
-    }));
+  // Type assertion here
+  const answers = booleanAnswers as unknown as QuizAnswer[];
 
-    return {
-      quizId,
-      score,
-      total,
-      answers: answers,
-    };
-  } finally {
-    await db.close();
-  }
+  return {
+    quizId,
+    score,
+    total: rows.length,
+    answers,
+  };
 }
 
 export async function getQuiz(quizId: number): Promise<Quiz | null> {
-  const db = await openDb();
-  try {
-    const result = await db.get(
-      `
-      SELECT 
-        q.*,
+  const { rows } = await turso.execute({
+    sql: `
+      SELECT
+        q.id,
         json_group_array(
           json_object(
             'id', qu.id,
@@ -86,61 +122,106 @@ export async function getQuiz(quizId: number): Promise<Quiz | null> {
       WHERE q.id = ?
       GROUP BY q.id
     `,
-      [quizId],
-    );
+    args: [quizId],
+  });
 
-    // Handle undefined/null case
-    if (!result) return null;
+  if (!rows.length) return null;
 
-    // Parse the JSON string in questions
-    return {
-      ...result,
-      questions: JSON.parse(result.questions),
-    };
-  } finally {
-    await db.close();
-  }
+  const row = rows[0] as unknown as Quiz;
+
+  return {
+    id: row.id,
+    questions: JSON.parse(row.questions),
+  };
 }
 
 export async function insertQuiz(
   title: string,
   content: string,
   questions: Question[],
-) {
-  const db = await openDb();
+): Promise<number> {
+  const transaction = await turso.transaction("write");
   try {
-    await db.run("BEGIN TRANSACTION");
-
     // Insert quiz
-    const quizResult = await db.run(
-      "INSERT INTO quizzes (title, content) VALUES (?, ?)",
-      [title, content],
+    console.log("Inserting quiz...");
+    console.log("title: ", title);
+    console.log("content: ", content);
+    console.log("questions: ", questions);
+    const { lastInsertRowid } = await transaction.execute({
+      sql: "INSERT INTO quizzes (title, content) VALUES (?, ?)",
+      args: [title, content],
+    });
+    const quizId = Number(lastInsertRowid);
+    console.log("Quiz inserted with ID:", quizId);
+
+    // Insert questions and options using batch
+    console.log("Preparing question inserts...");
+    const questionInserts = questions.map((question) => ({
+      sql: "INSERT INTO questions (quiz_id, title, correct) VALUES (?, ?, ?)",
+      args: [quizId, question.title, question.correct],
+    }));
+    console.log("Question inserts prepared:", questionInserts);
+
+    console.log("Executing question batch...");
+    const questionResults = await transaction.batch(questionInserts);
+    console.log("Question batch results:", questionResults);
+
+    // Get the question IDs from the batch results
+    const questionIds = questionResults.map((result) =>
+      Number(result.lastInsertRowid),
     );
-    const quizId = quizResult.lastID;
+    console.log("Question IDs:", questionIds);
 
-    // Insert questions and options
-    for (const question of questions) {
-      const questionResult = await db.run(
-        "INSERT INTO questions (quiz_id, title, correct) VALUES (?, ?, ?)",
-        [quizId, question.title, question.correct],
-      );
-      const questionId = questionResult.lastID;
+    // Insert options for each question using the correct questionId
+    console.log("Starting options insertion...");
+    for (let i = 0; i < questions.length; i++) {
+      const question = questions[i];
+      const questionId = questionIds[i];
 
-      // Insert options with positions
-      for (const [index, option] of question.options.entries()) {
-        await db.run(
-          "INSERT INTO options (question_id, content, position) VALUES (?, ?, ?)",
-          [questionId, option.content, index + 1],
-        );
-      }
+      console.log(`Processing question ${i + 1}/${questions.length}`, {
+        questionId,
+        title: question.title,
+      });
+
+      const optionInserts = question.options.map((option, index) => ({
+        sql: "INSERT INTO options (question_id, content, position) VALUES (?, ?, ?)",
+        args: [questionId, option.content, index + 1],
+      }));
+
+      console.log("Option inserts prepared:", optionInserts);
+      await transaction.batch(optionInserts);
     }
 
-    await db.run("COMMIT");
+    console.log("All insertions complete, committing transaction...");
+    await transaction.commit();
+    console.log("Transaction committed successfully");
+
     return quizId;
   } catch (error) {
-    await db.run("ROLLBACK");
+    console.error("Error during quiz insertion:", error);
+    console.log("Rolling back transaction...");
+    await transaction.rollback();
+    console.log("Transaction rolled back");
     throw error;
-  } finally {
-    await db.close();
+  }
+}
+
+export async function insertAnswers(answers: Answer[]) {
+  const transaction = await turso.transaction("write");
+
+  try {
+    // Save answers
+    const answerInserts = answers.map((answer) => ({
+      sql: "INSERT INTO answers (question_id, selected_option_id) VALUES (?, ?)",
+      args: [answer.questionId, answer.selectedOptionId],
+    }));
+
+    await transaction.batch(answerInserts);
+    await transaction.commit();
+
+    return true;
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
   }
 }
