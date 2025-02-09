@@ -131,7 +131,7 @@ export async function getQuiz(quizId: number): Promise<Quiz | null> {
 
   return {
     id: row.id,
-    questions: JSON.parse(row.questions),
+    questions: JSON.parse(row.questions as unknown as string), // We know for sure it is a string because of json from sql query
   };
 }
 
