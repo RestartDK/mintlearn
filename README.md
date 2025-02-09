@@ -1,53 +1,126 @@
-Time taken: 6 hours
+Time taken: 11 hours
 
-## TODO
+<div align="center">
+  <img src="public/mintlearn-logo.svg" height="96">
+  <h1 align="center">MintLearn</h1>
+</div>
 
-- [x] Use a zod schema to enforce the chat completion from mistral to use for the UI
-- [x] Implement chat endpoint for making `Quiz` object
-- [x] Implement retry endpoint for making a new `Quiz` object based on the last one
-- [ ] Make the quiz components where user can click and go to next page and get score at the end
-- [ ] Make the first page where you fill in form and button to redirect to quiz
-- [ ] Make end screen where you can restart or redo a new quiz
+<br/>
 
-## If more time
+## Overview
 
-- [ ] Can use a sqlite instance to quickly get a db working
-- [ ] Make the chat interface with streaming where you can have the chat on the left with the quiz on the right and can continuously regenerate the quiz on the fly
-- [ ] Make a sexy readme, push to git, and apply for mistral!
+MintLearn is an interactive quiz generation platform that transforms any content into engaging quizzes using AI. Powered by Mistral AI, it creates adaptive learning experiences that evolve based on user performance.
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Features
+
+- **AI-Powered Quiz Generation**: Convert any text content into well-structured quizzes
+- **Adaptive Learning**: Questions adjust based on previous performance
+- **Instant Feedback**: See detailed results and correct answers immediately
+- **Progress Tracking**: Monitor your learning journey with comprehensive scoring
+- **Retry Mechanism**: Generate similar quizzes focusing on areas that need improvement
+
+## How It Works
+
+The quiz generation process follows these steps:
+
+1. User inputs content and title
+2. Mistral AI analyzes the content and generates relevant questions
+3. Questions are stored with multiple-choice options
+4. User attempts the quiz
+5. Results are analyzed for adaptive learning
+6. New quizzes can be generated focusing on weak areas
+
+### How a Quiz is generated
+
+```mermaid
+flowchart TD
+    A[Prompt Mistral model with 'title' and 'content'] --> B{Is the response schema validated?}
+    B -->|Yes| C[Populate props of Quiz component]
+    B -->|No| D{Attempted more than n times?}
+    D -->|Yes| E[Throw an error]
+    D -->|No| B
+
+    style A fill:#e6fff7,stroke:#00bf8f
+    style B fill:#e6fff7,stroke:#00bf8f
+    style C fill:#e6fff7,stroke:#00bf8f
+    style D fill:#e6fff7,stroke:#00bf8f
+    style E fill:#e6fff7,stroke:#00bf8f
+
+    classDef note fill:#f9f9f9,stroke:#ccc,font-size:12px;
+```
+
+The schema that is expected from the LLM is below
+
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "title": "Question text here",
+      "options": [
+        {
+          "id": 1,
+          "content": "First option"
+        },
+        {
+          "id": 2,
+          "content": "Second option"
+        },
+        {
+          "id": 3,
+          "content": "Third option"
+        },
+        {
+          "id": 4,
+          "content": "Fourth option"
+        }
+      ],
+      "correct": 2 // Integer representing the correct option position (1-4)
+    }
+  ]
+}
+```
+
+The schema validation ensures:
+
+- Each question has exactly 4 options
+- IDs are sequential numbers
+- The 'correct' field is a number 1-4 representing the position of the correct answer
+- All required fields are present and properly formatted
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/mintlearn.git
+
+# Install dependencies
+npm install
+
+# Initialize the database
+npm run init-db
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env` file with:
 
-## Learn More
+```env
+MISTRAL_API_KEY=your_api_key_here
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Technology Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Frontend**: Next.js 14, TailwindCSS
+- **Database**: SQLite
+- **AI Model**: Mistral
+- **Language**: TypeScript
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contributions are welcome! Please feel free to submit a Pull Request.
