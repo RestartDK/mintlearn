@@ -34,10 +34,6 @@ export async function generateQuizFromMistral(
       throw new Error(validatedQuiz.error.toString());
     }
 
-    if (retryCount < MAX_RETRIES) {
-      return generateQuizFromMistral(title, content, prompt, retryCount + 1);
-    }
-
     return validatedQuiz.data;
   } catch (error) {
     console.log(error);
