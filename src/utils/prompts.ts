@@ -1,4 +1,3 @@
-import { Answer } from "./schemas";
 import { QuizResults } from "./types";
 
 export const generateQuizPrompt = (title: string, content: string) => `
@@ -47,8 +46,6 @@ Requirements:
 
 Return only the JSON object with no additional text or explanation.
 `;
-
-// TODO: Need to implement a new interface and logic for the accumulation of the responses from the user from the previous test
 
 export const generateAdaptiveQuizPrompt = (
   title: string,

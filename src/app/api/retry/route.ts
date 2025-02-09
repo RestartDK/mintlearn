@@ -1,7 +1,6 @@
 import { generateQuizFromMistral } from "@/utils/queries";
 import { generateAdaptiveQuizPrompt } from "@/utils/prompts";
-import { redirect } from "next/navigation";
-import { QuizResults } from "@/utils/types";
+import { QuizContent, QuizResults } from "@/utils/types";
 import { openDb } from "@/lib/db";
 import { getQuiz, insertQuiz } from "@/lib/queries";
 
@@ -12,15 +11,9 @@ export async function POST(req: Request) {
 
     const { quizId } = results;
 
-    // if (!data.success) {
-    //   console.log(data.error);
-    //   return Response.json({ message: "Invalid input" }, { status: 400 });
-    // }
-
     const db = await openDb();
 
-    // TODO: Make a new type here for the db version of the quiz made one inffered from zod schem smh
-    const currentQuiz = await db.get(
+    const currentQuiz: QuizContent | undefined = await db.get(
       "SELECT title, content from quizzes where id = ?",
       [quizId],
     );

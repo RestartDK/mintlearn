@@ -1,4 +1,3 @@
-// TODO: Right now the response endpoint does not work
 import { Answer, Quiz } from "@/utils/schemas";
 import { QuizResults } from "@/utils/types";
 

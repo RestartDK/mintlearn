@@ -1,5 +1,10 @@
 import { Answer } from "./schemas";
 
+export interface QuizContent {
+  title: string;
+  content: string;
+}
+
 export interface QuizAttempt {
   title: string;
   content: string;

@@ -31,10 +31,7 @@ export function QuizView({ quiz }: { quiz: Quiz }) {
 
   async function handleSubmit() {
     try {
-      // TODO: Remove variable here and instead just await
-      const response = await submitAnswers(answers);
-
-      console.log(response);
+      await submitAnswers(answers);
 
       // Redirect to results page with quiz ID
       router.push(`/quiz/${quiz.id}/results`);
