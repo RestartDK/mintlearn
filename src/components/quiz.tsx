@@ -4,9 +4,11 @@ import { Answer, Quiz } from "@/utils/schemas";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitAnswers } from "@/lib/hooks";
+import { Loader2 } from "lucide-react";
 
 export function QuizView({ quiz }: { quiz: Quiz }) {
   const [answers, setAnswers] = useState<Answer[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleAnswer = (
@@ -31,12 +33,15 @@ export function QuizView({ quiz }: { quiz: Quiz }) {
 
   async function handleSubmit() {
     try {
+      setIsLoading(true);
       await submitAnswers(answers);
 
       // Redirect to results page with quiz ID
       router.push(`/quiz/${quiz.id}/results`);
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setIsLoading(false);
     }
   }
   // Helper function to get selected option for a question
@@ -83,13 +88,20 @@ export function QuizView({ quiz }: { quiz: Quiz }) {
           </div>
         ))}
       </div>
-
       <button
         onClick={handleSubmit}
-        disabled={answers.length !== quiz.questions.length}
-        className="mt-8 px-6 py-3 rounded text-foreground w-full font-bold bg-mint-400 disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={answers.length !== quiz.questions.length || isLoading}
+        className={`mt-8 px-6 py-3 rounded text-foreground w-full font-bold bg-mint-400 disabled:opacity-50 disabled:cursor-not-allowed
+          flex items-center justify-center gap-2`} // Added flex utilities
       >
-        Submit Quiz
+        {isLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Submitting...
+          </>
+        ) : (
+          "Submit Quiz"
+        )}
       </button>
     </div>
   );
