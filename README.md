@@ -112,6 +112,7 @@ Create a `.env` file with:
 
 ```env
 MISTRAL_API_KEY=your_api_key_here
+TURSO_DATABASE_URL=http://127.0.0.1:8080
 ```
 
 ## Technology Stack
