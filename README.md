@@ -90,12 +90,27 @@ The schema validation ensures:
 
 ## Getting Started
 
+If you do not have turso installed on your computer please run the following command:
+
+```bash
+# For macOS
+brew install tursodatabase/tap/turso
+
+# For linux or windows
+curl -sSfL https://get.tur.so/install.sh | bash
+```
+
+Then to actually set up the project:
+
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/mintlearn.git
 
 # Install dependencies
 npm install
+
+# Run development server for turso
+turso dev
 
 # Initialize the database
 npm run init-db
@@ -117,8 +132,8 @@ TURSO_DATABASE_URL=http://127.0.0.1:8080
 
 ## Technology Stack
 
-- **Frontend**: Next.js 14, TailwindCSS
-- **Database**: SQLite
+- **Frontend**: Next.js 15, TailwindCSS
+- **Database**: libSQL, Turso
 - **AI Model**: Mistral
 - **Language**: TypeScript
 
