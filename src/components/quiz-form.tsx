@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { generateQuiz } from "@/lib/hooks";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export function QuizForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +28,7 @@ export function QuizForm() {
       router.push(`/quiz/${response.id}`);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Something went wrong");
+      toast.error("Something went wrong!");
     } finally {
       setIsLoading(false);
     }
