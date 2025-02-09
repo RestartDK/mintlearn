@@ -8,13 +8,11 @@ import toast from "react-hot-toast";
 
 export function RedoButton({ results }: { results: QuizResults }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   async function handleSubmit() {
     try {
       setIsLoading(true);
-      setError(null);
       const response = await generateRetryQuiz(results);
       if (!response?.id) {
         throw new Error("Failed to generate new quiz");
@@ -25,7 +23,6 @@ export function RedoButton({ results }: { results: QuizResults }) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to generate quiz";
       toast.error(errorMessage);
-      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
