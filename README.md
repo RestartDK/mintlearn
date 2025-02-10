@@ -121,13 +121,17 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Environment Setup
+## How to Test
 
-Create a `.env` file with:
+MintLearn uses Vitest for testing, including unit tests for database queries and quiz generation validation
 
-```env
-MISTRAL_API_KEY=your_api_key_here
-TURSO_DATABASE_URL=http://127.0.0.1:8080
+- Database operations
+- Quiz generation
+
+### Running Tests
+
+```bash
+npm run test
 ```
 
 ## Technology Stack
