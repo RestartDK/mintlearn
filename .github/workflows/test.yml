@@ -26,5 +26,8 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Setup Test DB
+        run: npm run init-db
+
       - name: Run Tests
         run: npm run test:ci
