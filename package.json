@@ -8,7 +8,6 @@
     "init-db": "npx tsx ./src/scripts/db-init.ts",
     "start": "next start",
     "test": "vitest",
-    "test:ci": "TURSO_DATABASE_URL=file:test.db TURSO_AUTH_TOKEN=none vitest",
     "lint": "next lint"
   },
   "dependencies": {
