@@ -1,6 +1,6 @@
 import { RedoButton } from "@/components/redo-button";
 import { getQuizResults } from "@/lib/queries";
-import { CircleHelp, XCircle, CheckCircle } from "lucide-react"; // Added icons
+import { CircleHelp, XCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 export default async function ResultsPage({
@@ -48,7 +48,6 @@ export default async function ResultsPage({
 
             {/* Answer Section */}
             <div className="space-y-2">
-              {/* Your Answer */}
               <div className="flex items-start gap-2">
                 {result.isCorrect ? (
                   <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
@@ -67,10 +66,7 @@ export default async function ResultsPage({
                   <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                   <div>
                     <p className="text-sm text-gray-600">Correct answer:</p>
-                    <p className="text-background">
-                      {/* You'll need to add the correct answer text to your results object */}
-                      {result.correctAnswer}
-                    </p>
+                    <p className="text-background">{result.correctAnswer}</p>
                   </div>
                 </div>
               )}
@@ -79,7 +75,6 @@ export default async function ResultsPage({
         ))}
       </div>
 
-      {/* Actions */}
       <div className="flex gap-x-4">
         <RedoButton results={results} />
         <Link
