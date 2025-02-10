@@ -1,0 +1,31 @@
+name: Run Tests
+env:
+  TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+  TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+  MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm run test:ci
