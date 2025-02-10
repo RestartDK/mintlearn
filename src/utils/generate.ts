@@ -11,7 +11,7 @@ export async function generateQuizFromMistral(
   content: string,
   prompt: string,
   retryCount = 0,
-): Promise<Quiz | null> {
+): Promise<Quiz | undefined> {
   try {
     const result = await client.chat.complete({
       model: "mistral-tiny",
@@ -40,6 +40,6 @@ export async function generateQuizFromMistral(
     if (retryCount < MAX_RETRIES) {
       return generateQuizFromMistral(title, content, prompt, retryCount + 1);
     }
-    return null;
+    throw new Error("Could not generate quiz");
   }
 }

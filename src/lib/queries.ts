@@ -51,7 +51,7 @@ export async function initDb() {
 }
 export async function getQuizResults(
   quizId: number,
-): Promise<QuizResults | null> {
+): Promise<QuizResults | undefined> {
   const { rows } = await turso.execute({
     sql: `
       SELECT
@@ -76,7 +76,7 @@ export async function getQuizResults(
     args: [quizId],
   });
 
-  if (!rows.length) return null;
+  if (!rows.length) return undefined;
 
   const score = rows.filter((r) => r.isCorrect).length;
   const booleanAnswers = rows.map((row) => ({
@@ -95,7 +95,7 @@ export async function getQuizResults(
   };
 }
 
-export async function getQuiz(quizId: number): Promise<Quiz | null> {
+export async function getQuiz(quizId: number): Promise<Quiz | undefined> {
   const { rows } = await turso.execute({
     sql: `
       SELECT
@@ -125,7 +125,7 @@ export async function getQuiz(quizId: number): Promise<Quiz | null> {
     args: [quizId],
   });
 
-  if (!rows.length) return null;
+  if (!rows.length) return undefined;
 
   const row = rows[0] as unknown as Quiz;
 
@@ -143,65 +143,44 @@ export async function insertQuiz(
   const transaction = await turso.transaction("write");
   try {
     // Insert quiz
-    console.log("Inserting quiz...");
-    console.log("title: ", title);
-    console.log("content: ", content);
-    console.log("questions: ", questions);
     const { lastInsertRowid } = await transaction.execute({
       sql: "INSERT INTO quizzes (title, content) VALUES (?, ?)",
       args: [title, content],
     });
     const quizId = Number(lastInsertRowid);
-    console.log("Quiz inserted with ID:", quizId);
 
     // Insert questions and options using batch
-    console.log("Preparing question inserts...");
     const questionInserts = questions.map((question) => ({
       sql: "INSERT INTO questions (quiz_id, title, correct) VALUES (?, ?, ?)",
       args: [quizId, question.title, question.correct],
     }));
-    console.log("Question inserts prepared:", questionInserts);
 
-    console.log("Executing question batch...");
     const questionResults = await transaction.batch(questionInserts);
-    console.log("Question batch results:", questionResults);
 
     // Get the question IDs from the batch results
     const questionIds = questionResults.map((result) =>
       Number(result.lastInsertRowid),
     );
-    console.log("Question IDs:", questionIds);
 
     // Insert options for each question using the correct questionId
-    console.log("Starting options insertion...");
     for (let i = 0; i < questions.length; i++) {
       const question = questions[i];
       const questionId = questionIds[i];
-
-      console.log(`Processing question ${i + 1}/${questions.length}`, {
-        questionId,
-        title: question.title,
-      });
 
       const optionInserts = question.options.map((option, index) => ({
         sql: "INSERT INTO options (question_id, content, position) VALUES (?, ?, ?)",
         args: [questionId, option.content, index + 1],
       }));
 
-      console.log("Option inserts prepared:", optionInserts);
       await transaction.batch(optionInserts);
     }
 
-    console.log("All insertions complete, committing transaction...");
     await transaction.commit();
-    console.log("Transaction committed successfully");
 
     return quizId;
   } catch (error) {
     console.error("Error during quiz insertion:", error);
-    console.log("Rolling back transaction...");
     await transaction.rollback();
-    console.log("Transaction rolled back");
     throw error;
   }
 }
