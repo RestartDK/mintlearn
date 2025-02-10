@@ -1,0 +1,33 @@
+name: Run Tests
+env:
+  TURSO_DATABASE_URL: "file:test.db"
+  TURSO_AUTH_TOKEN: "none"
+  MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Setup Test DB
+        run: npm run init-db
+
+      - name: Run Tests
+        run: npm run test

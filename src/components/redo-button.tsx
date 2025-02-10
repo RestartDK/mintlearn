@@ -29,26 +29,23 @@ export function RedoButton({ results }: { results: QuizResults }) {
   }
 
   return (
-    <div>
-      <button
-        onClick={handleSubmit}
-        disabled={isLoading}
-        aria-label="Generate similar quiz"
-        className="py-2 px-4 rounded-md text-white transition-colors duration-200 font-bold flex items-center gap-2 bg-mint-400 hover:bg-mint-500/90 disabled:opacity-50 disabled:cursor-not-allowed
-        "
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Generating Quiz...</span>
-          </>
-        ) : (
-          <>
-            <RotateCcw className="h-4 w-4" />
-            <span>Redo similar quiz</span>
-          </>
-        )}
-      </button>
-    </div>
+    <button
+      onClick={handleSubmit}
+      disabled={isLoading}
+      aria-label="Generate similar quiz"
+      className="py-2 px-4 rounded-md text-white transition-colors duration-200 font-bold flex items-center gap-2 bg-mint-400 hover:bg-mint-500/90 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {isLoading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Generating Quiz...</span>
+        </>
+      ) : (
+        <>
+          <RotateCcw className="h-4 w-4" />
+          <span>Redo similar quiz</span>
+        </>
+      )}
+    </button>
   );
 }
