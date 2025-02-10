@@ -1,7 +1,7 @@
 name: Run Tests
 env:
   TURSO_DATABASE_URL: "file:test.db"
-  TURSO_AUTH_TOKEN: ""
+  TURSO_AUTH_TOKEN: "none"
   MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
 
 on:
