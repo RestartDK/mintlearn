@@ -14,7 +14,7 @@ export async function generateQuizFromMistral(
 ): Promise<Quiz | undefined> {
   try {
     const result = await client.chat.complete({
-      model: "mistral-tiny",
+      model: "mistral-small-latest",
       messages: [{ role: "user", content: prompt }],
       responseFormat: { type: "json_object" },
     });
