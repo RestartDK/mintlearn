@@ -107,16 +107,16 @@ Then to actually set up the project:
 git clone https://github.com/yourusername/mintlearn.git
 
 # Install dependencies
-npm install
+pnpm install
 
 # Run development server for turso
 turso dev
 
 # Initialize the database
-npm run init-db
+pnpm run init-db
 
 # Run the development server
-npm run dev
+pnpm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -131,7 +131,7 @@ MintLearn uses Vitest for testing, including unit tests for database queries and
 ### Running Tests
 
 ```bash
-npm run test
+pnpm run test
 ```
 
 ## Technology Stack
